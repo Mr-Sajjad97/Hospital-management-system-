@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { usePWAInstall, useOnlineStatus } from './usePWAInstall';
 
 export interface Medicine {
   id: number;
@@ -291,8 +292,11 @@ export default function App() {
   const [chartMode, setChartMode] = useState<'trading' | 'monthly' | 'live'>('trading');
   const [isLiveStreaming, setIsLiveStreaming] = useState(true);
   const [guideModalOpen, setGuideModalOpen] = useState(false);
+  const [shortcutGuideOpen, setShortcutGuideOpen] = useState(false);
   const [lastActivityPage, setLastActivityPage] = useState<PageName>('Sale');
   const mainScrollRef = useRef<HTMLElement | null>(null);
+  const { isInstallable, isInstalled, install } = usePWAInstall();
+  const isOnline = useOnlineStatus();
 
   // Live Trading Chart Stream State (Candlesticks + Live Price Line + Volume)
   const [tradingCandles, setTradingCandles] = useState<
@@ -1411,6 +1415,28 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-1.5">
+            {!isOnline && (
+              <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold">
+                ⚡ Offline Mode Active
+              </span>
+            )}
+            {!isInstalled && (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (isInstallable) {
+                    await install();
+                  } else {
+                    setShortcutGuideOpen(true);
+                  }
+                }}
+                className="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold transition cursor-pointer whitespace-nowrap flex items-center gap-1"
+                title="Install Desktop Shortcut & Offline App"
+              >
+                <span>🖥</span>
+                <span>Install Desktop Shortcut</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setGuideModalOpen(true)}
@@ -1515,6 +1541,22 @@ export default function App() {
 
             <div className="p-2.5 space-y-2">
               <div className="mx-2 h-px bg-[#333] mb-2" />
+              {!isInstalled && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (isInstallable) {
+                      await install();
+                    } else {
+                      setShortcutGuideOpen(true);
+                    }
+                  }}
+                  className="w-full py-2 px-2.5 rounded-lg text-[11px] font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <span>🖥</span>
+                  <span>Desktop Shortcut & Offline</span>
+                </button>
+              )}
               <button
                 onClick={() => setBackupModalOpen(true)}
                 className="w-full py-2 px-2.5 rounded-lg text-[11px] font-medium bg-[#16213e] hover:bg-[#0f3460] text-emerald-300 transition cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5"
@@ -3153,6 +3195,53 @@ export default function App() {
                 className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-xs cursor-pointer"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Shortcut & Offline Setup Modal */}
+      {shortcutGuideOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4">
+          <div className={`w-full max-w-xl rounded-xl p-6 space-y-4 ${bgCard}`}>
+            <div className="flex justify-between items-center border-b border-gray-700 pb-3">
+              <h3 className="text-base font-bold text-[#4fc3f7]">
+                🖥 Desktop Shortcut & Offline Chalane Ka Tareeqa
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShortcutGuideOpen(false)}
+                className="text-gray-400 hover:text-white font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-3 text-xs leading-relaxed text-gray-200">
+              <div className="p-3 rounded-lg bg-[#0d1117] border border-emerald-500/30">
+                <div className="font-bold text-emerald-400 mb-1">
+                  Tareeqa 1: Browser Se Direct Desktop App Install Karein (PWA)
+                </div>
+                <p>
+                  Chrome ya Edge ke upar Address Bar (`http://localhost:3000`) ke dain (right) kone mein <strong>Install Icon (📥 / 🖥)</strong> par click karein, ya <strong>3 Dots (⋮) → Cast, save, and share → Install Hospital Management System</strong> par click karein. Is se aap ke Desktop par HMS ka icon ban jayega.
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-[#0d1117] border border-sky-500/30">
+                <div className="font-bold text-sky-400 mb-1">
+                  Tareeqa 2: 100% Offline Chalane Ke Liye (`Create_Desktop_Shortcut.bat`)
+                </div>
+                <p>
+                  Aap ke project folder ke andar <strong><code className="text-amber-300">Create_Desktop_Shortcut.bat</code></strong> aur <strong><code className="text-amber-300">Run_HMS.bat</code></strong> files bana di gayi hain. Sirf <code>Create_Desktop_Shortcut.bat</code> par double-click karein — aap ke Windows Desktop par shortcut ban jayega jo bina internet (Offline) server aur app dono ko chala dega!
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShortcutGuideOpen(false)}
+                className="px-4 py-2 rounded-lg bg-[#16a34a] hover:bg-[#15803d] text-white text-xs font-bold cursor-pointer"
+              >
+                Theek Hai (Close)
               </button>
             </div>
           </div>
