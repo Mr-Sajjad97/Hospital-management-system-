@@ -1,0 +1,5 @@
+{
+  "name": "Hospital Management System",
+  "description": "Complete Hospital Management System for managing pharmacy medicines, stock purchases, supplier balances, sales billing, laboratory tests, OPD appointments, employees, salaries, expenses, and financial profit/loss reports.",
+  "requestFramePermissions": []
+}
